@@ -10,6 +10,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.11",
     "@prisma/client": "^4.9.0",
     "next": "13.1.6",
     "react": "18.2.0",
