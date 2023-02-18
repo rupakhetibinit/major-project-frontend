@@ -1,7 +1,19 @@
 import clsx from "clsx";
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useMemo, useState } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import { ChevronUpDownIcon, CheckIcon } from "@heroicons/react/24/solid";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from "chart.js";
+import { Bar, Pie } from "react-chartjs-2";
+import { useQuery } from "react-query";
 // type Props = {}
 const models = [
   {
@@ -20,6 +32,15 @@ const models = [
     unavailable: false,
   },
 ];
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
 
 const Page = () => {
   const [query, setQuery] = useState("");
@@ -38,90 +59,168 @@ const Page = () => {
       prediction3: string;
       text: string;
     }[];
-    setData(response);
+    return response;
   };
   const [model, setModel] = useState(models[0]);
 
-  const [data, setData] = useState<
+  const { data, isLoading, refetch } = useQuery(
+    ["data"],
+    () => fetchTweetsFromTwitter(),
     {
-      id: string;
-      prediction1: string;
-      prediction2: string;
-      prediction3: string;
-      text: string;
-    }[]
-  >([
-    // {
-    //   id: "1626492462406443008",
-    //   prediction1: "Negative",
-    //   prediction2: "Negative",
-    //   prediction3: "Positive",
-    //   text: "Nepal being everything messy and disturbing. But\n؟?\n⁦سےفے⁦\n\n🔹X9🔹\n🔹X9🔹\n🔹X9🔹",
-    // },
-    // {
-    //   id: "1626492407121321984",
-    //   prediction1: "Negative",
-    //   prediction2: "Negative",
-    //   prediction3: "Positive",
-    //   text: "The secret talks between our neighboring countries to the north and south have been leaked.  China will attack Taiwan and join China.  India should support China.  And India will merge Nepal with India and China will support it.  Therefore, SPP should be implemented in Nepal now.",
-    // },
-    // {
-    //   id: "1626491880669327360",
-    //   prediction1: "Negative",
-    //   prediction2: "Negative",
-    //   prediction3: "Negative",
-    //   text: "Nepal lost another wicket!\n\nRohit Paudel 6 (10) c Jarvis b Watt \nNepal: 55-4 (8.1 overs) \n\nNepal require 220 runs from 41.5 overs.\n\n #CWCL2 #NEPvSCO #weCAN",
-    // },
-    // {
-    //   id: "1626491193768148992",
-    //   prediction1: "Positive",
-    //   prediction2: "Positive",
-    //   prediction3: "Positive",
-    //   text: "Match 3: After 8.0 Ov, Nepal 55/3. Rohit Paudel 6 (9b), Kushal Malla 8 (15b) #NEPvSCO",
-    // },
-    // {
-    //   id: "1626490721917358080",
-    //   prediction1: "Positive",
-    //   prediction2: "Positive",
-    //   prediction3: "Negative",
-    //   text: "🇳🇵Nepal also has been a popular destination for regional FES-events as well as activities of Global Union Federations. Over the years, the Kathmandu Office has acquired a reputation for their hospitality – proudly continuing this Nepalese trait.😊(7/9)",
-    // },
-    // {
-    //   id: "1626490718238969856",
-    //   prediction1: "Positive",
-    //   prediction2: "Positive",
-    //   prediction3: "Negative",
-    //   text: "Another project that is very dear to FES Nepal is the #FESNepalSummerSchool. Every year, they invite around 25 talented and promising young people from different backgrounds for a week-long intensive workshop program to engage on practical issues of democracy. (5/9)",
-    // },
-    // {
-    //   id: "1626490716439584769",
-    //   prediction1: "Positive",
-    //   prediction2: "Positive",
-    //   prediction3: "Positive",
-    //   text: "FES Nepal works closely with different trade union partners. Their focus has been on supporting them in their strategic reflections and building union power to support social justice in Nepal. With #civil society partners, they mostly work with a focus on #genderjustice. (4/9)",
-    // },
-    // {
-    //   id: "1626490713855889410",
-    //   prediction1: "Positive",
-    //   prediction2: "Positive",
-    //   prediction3: "Negative",
-    //   text: "Nepal has a challenging topography and is a very diverse country, so discussion programmes on issues of democratic consolidation outside of the #Kathmandu valley have always been an important part of the office’s work. (3/9)",
-    // },
-    // {
-    //   id: "1626490711632904192",
-    //   prediction1: "Positive",
-    //   prediction2: "Positive",
-    //   prediction3: "Positive",
-    //   text: "𝗗𝘆𝗻𝗮𝗺𝗶𝗰. 𝗙𝗮𝗺𝗶𝗹𝘆. 𝗟𝗮𝘂𝗴𝗵𝘁𝗲𝗿.\n\nFES has been a trusted partner for democracy and social justice in #Nepal since 1995 and is well known for their civic education programme. (2/9)",
-    // },
-    // {
-    //   id: "1626490347890040834",
-    //   prediction1: "Positive",
-    //   prediction2: "Positive",
-    //   prediction3: "Positive",
-    //   text: "I just bought a new old Jag, yeah, it's so fast\n\nKodak White by Népal",
-    // },
-  ]);
+      enabled: false,
+    }
+  );
+  // const [data, setData] = useState<
+  //   {
+  //     id: string;
+  //     prediction1: string;
+  //     prediction2: string;
+  //     prediction3: string;
+  //     text: string;
+  //   }[]
+  // >([
+  // {
+  //   id: "1626492462406443008",
+  //   prediction1: "Negative",
+  //   prediction2: "Negative",
+  //   prediction3: "Positive",
+  //   text: "Nepal being everything messy and disturbing. But\n؟?\n⁦سےفے⁦\n\n🔹X9🔹\n🔹X9🔹\n🔹X9🔹",
+  // },
+  // {
+  //   id: "1626492407121321984",
+  //   prediction1: "Negative",
+  //   prediction2: "Negative",
+  //   prediction3: "Positive",
+  //   text: "The secret talks between our neighboring countries to the north and south have been leaked.  China will attack Taiwan and join China.  India should support China.  And India will merge Nepal with India and China will support it.  Therefore, SPP should be implemented in Nepal now.",
+  // },
+  // {
+  //   id: "1626491880669327360",
+  //   prediction1: "Negative",
+  //   prediction2: "Negative",
+  //   prediction3: "Negative",
+  //   text: "Nepal lost another wicket!\n\nRohit Paudel 6 (10) c Jarvis b Watt \nNepal: 55-4 (8.1 overs) \n\nNepal require 220 runs from 41.5 overs.\n\n #CWCL2 #NEPvSCO #weCAN",
+  // },
+  // {
+  //   id: "1626491193768148992",
+  //   prediction1: "Positive",
+  //   prediction2: "Positive",
+  //   prediction3: "Positive",
+  //   text: "Match 3: After 8.0 Ov, Nepal 55/3. Rohit Paudel 6 (9b), Kushal Malla 8 (15b) #NEPvSCO",
+  // },
+  // {
+  //   id: "1626490721917358080",
+  //   prediction1: "Positive",
+  //   prediction2: "Positive",
+  //   prediction3: "Negative",
+  //   text: "🇳🇵Nepal also has been a popular destination for regional FES-events as well as activities of Global Union Federations. Over the years, the Kathmandu Office has acquired a reputation for their hospitality – proudly continuing this Nepalese trait.😊(7/9)",
+  // },
+  // {
+  //   id: "1626490718238969856",
+  //   prediction1: "Positive",
+  //   prediction2: "Positive",
+  //   prediction3: "Negative",
+  //   text: "Another project that is very dear to FES Nepal is the #FESNepalSummerSchool. Every year, they invite around 25 talented and promising young people from different backgrounds for a week-long intensive workshop program to engage on practical issues of democracy. (5/9)",
+  // },
+  // {
+  //   id: "1626490716439584769",
+  //   prediction1: "Positive",
+  //   prediction2: "Positive",
+  //   prediction3: "Positive",
+  //   text: "FES Nepal works closely with different trade union partners. Their focus has been on supporting them in their strategic reflections and building union power to support social justice in Nepal. With #civil society partners, they mostly work with a focus on #genderjustice. (4/9)",
+  // },
+  // {
+  //   id: "1626490713855889410",
+  //   prediction1: "Positive",
+  //   prediction2: "Positive",
+  //   prediction3: "Negative",
+  //   text: "Nepal has a challenging topography and is a very diverse country, so discussion programmes on issues of democratic consolidation outside of the #Kathmandu valley have always been an important part of the office’s work. (3/9)",
+  // },
+  // {
+  //   id: "1626490711632904192",
+  //   prediction1: "Positive",
+  //   prediction2: "Positive",
+  //   prediction3: "Positive",
+  //   text: "𝗗𝘆𝗻𝗮𝗺𝗶𝗰. 𝗙𝗮𝗺𝗶𝗹𝘆. 𝗟𝗮𝘂𝗴𝗵𝘁𝗲𝗿.\n\nFES has been a trusted partner for democracy and social justice in #Nepal since 1995 and is well known for their civic education programme. (2/9)",
+  // },
+  // {
+  //   id: "1626490347890040834",
+  //   prediction1: "Positive",
+  //   prediction2: "Positive",
+  //   prediction3: "Positive",
+  //   text: "I just bought a new old Jag, yeah, it's so fast\n\nKodak White by Népal",
+  // },
+  // ]);
+
+  const options = {
+    // responsive: true,
+    plugins: {
+      legend: {
+        position: "top" as const,
+      },
+      title: {
+        display: true,
+        text: `${model?.name as string} Sentiment Chart `,
+      },
+    },
+  };
+  const labels = [`Tweets containing ${query}`];
+
+  const positiveTweetsForModel = useMemo(() => {
+    switch (model?.name) {
+      case "prediction1":
+        return data?.filter((tweet) => tweet.prediction1 === "Positive").length;
+      case "prediction2":
+        return data?.filter((tweet) => tweet.prediction2 === "Positive").length;
+      case "prediction3":
+        return data?.filter((tweet) => tweet.prediction3 === "Positive").length;
+      default:
+        break;
+    }
+
+    return;
+  }, [data, model?.name]);
+  const negativeTweetsForModel = useMemo(() => {
+    switch (model?.name) {
+      case "prediction1":
+        return data?.filter((tweet) => tweet.prediction1 === "Negative").length;
+      case "prediction2":
+        return data?.filter((tweet) => tweet.prediction2 === "Negative").length;
+      case "prediction3":
+        return data?.filter((tweet) => tweet.prediction3 === "Negative").length;
+      default:
+        break;
+    }
+  }, [data, model?.name]);
+
+  const chartdata = {
+    labels,
+    datasets: [
+      {
+        label: `Positive Tweets`,
+        data: labels.map(() => positiveTweetsForModel),
+        backgroundColor: "rgba(53, 162, 235, 0.5)",
+      },
+      {
+        label: `Negative Tweets`,
+        data: labels.map(() => negativeTweetsForModel),
+        backgroundColor: "rgba(255, 99, 132, 0.5)",
+      },
+    ],
+  };
+  const label = `Tweets containing ${query}`;
+  const pieData = {
+    labels: ["Positive", "Negative"],
+    datasets: [
+      {
+        data: [positiveTweetsForModel, negativeTweetsForModel],
+        label: label,
+        backgroundColor: ["rgba(54, 162, 235, 0.2)", "rgba(255, 99, 132, 0.2)"],
+        borderColor: ["rgba(54, 162, 235, 1)", "rgba(255, 99, 132, 1)"],
+        borderWidth: 1,
+      },
+    ],
+  };
+
   return (
     <main className="flex h-screen w-screen flex-row justify-center bg-gray-300">
       <div className="flex flex-1 flex-col ">
@@ -136,11 +235,8 @@ const Page = () => {
           />
           <button
             className="mx-2 rounded-md bg-indigo-400 px-4 py-2 font-semibold text-white hover:bg-indigo-600"
-            onClick={() => {
-              fetchTweetsFromTwitter()
-                .then((c) => console.log(c))
-                .catch((e) => console.log(e));
-            }}
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            onClick={async () => await refetch()}
           >
             Search
           </button>
@@ -217,18 +313,19 @@ const Page = () => {
           </Listbox> */}
 
         {/* List of tweets */}
-        <div className="mx-2 overflow-y-auto">
+        <div className="overflow-y-auto px-4">
           {data?.map((tweet) => (
             <>
               <div
                 className="baseline my-2 flex w-full rounded-md bg-white p-2"
                 key={tweet.id}
               >
-                <div className="mr-4 flex items-center align-baseline">
+                <div className="ml-2 mr-4 flex items-center align-baseline">
                   <p
                     className={clsx(
                       tweet.prediction1 === "Positive" && "text-green-500",
-                      tweet.prediction1 === "Negative" && "text-red-500"
+                      tweet.prediction1 === "Negative" && "text-red-500",
+                      "font-bold"
                     )}
                   >
                     {model?.name === "prediction1" && tweet.prediction1[0]}
@@ -236,7 +333,8 @@ const Page = () => {
                   <p
                     className={clsx(
                       tweet.prediction2 === "Positive" && "text-green-500",
-                      tweet.prediction2 === "Negative" && "text-red-500"
+                      tweet.prediction2 === "Negative" && "text-red-500",
+                      "font-bold"
                     )}
                   >
                     {model?.name === "prediction2" && tweet.prediction2[0]}
@@ -244,7 +342,8 @@ const Page = () => {
                   <p
                     className={clsx(
                       tweet.prediction3 === "Positive" && "text-green-500",
-                      tweet.prediction3 === "Negative" && "text-red-500"
+                      tweet.prediction3 === "Negative" && "text-red-500",
+                      "font-bold"
                     )}
                   >
                     {model?.name === "prediction3" && tweet.prediction3[0]}
@@ -256,8 +355,20 @@ const Page = () => {
           ))}
         </div>
       </div>
-      <div className="flex flex-1 items-center justify-center">
-        <div>This is the right content</div>
+      <div className="flex flex-1 flex-col items-center justify-center overflow-y-scroll">
+        {data && <Bar data={chartdata} options={options} />}
+        {data && (
+          <Pie
+            width={500}
+            height={500}
+            options={{
+              maintainAspectRatio: false,
+              responsive: false,
+            }}
+            data={pieData}
+          />
+        )}
+        {!data && <p>Nothing to see here</p>}
       </div>
     </main>
   );
