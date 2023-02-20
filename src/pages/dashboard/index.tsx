@@ -2,224 +2,137 @@ import clsx from "clsx";
 import React, { Fragment, useMemo, useState } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import { ChevronUpDownIcon, CheckIcon } from "@heroicons/react/24/solid";
+
+export interface SentimentResponse {
+  id: string;
+  tweet: string;
+  models: {
+    model_id: number;
+    name: string;
+    prediction: "Positive" | "Negative" | "Neutral";
+  }[];
+}
+
+import { useQuery } from "react-query";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
   Tooltip,
   Legend,
-  ArcElement,
-} from "chart.js";
-import { Bar, Pie } from "react-chartjs-2";
-import { useQuery } from "react-query";
-// type Props = {}
+  Bar,
+  PieChart,
+  Pie,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
+
 const models = [
   {
-    id: 1,
-    name: "prediction1",
+    model_id: 0,
+    name: "Multinomial Naive Bayes" as const,
     unavailable: false,
   },
   {
-    id: 2,
-    name: "prediction2",
+    model_id: 1,
+    name: "Support Vector Machine" as const,
     unavailable: false,
   },
   {
-    id: 3,
-    name: "prediction3",
+    model_id: 2,
+    name: "Random Forest Classifier" as const,
+    unavailable: false,
+  },
+  { model_id: 3, name: "BERT Finetuned" as const, unavailable: false },
+  {
+    model_id: 4,
+    name: "Twitter XLM Sentiment Finetuned" as const,
     unavailable: false,
   },
 ];
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
 
+const COLORS = ["#8884d8", "#82ca9d", "#442244"];
 const Page = () => {
   const [query, setQuery] = useState("");
 
   const fetchTweetsFromTwitter = async () => {
     const res = await fetch(
-      "http://127.0.0.1:5000/api?search=" + query.toString(),
+      "http://localhost:3000/api/gettweets?search=" + query.toString(),
       {
         method: "POST",
       }
     );
-    const response = (await res.json()) as {
-      id: string;
-      prediction1: string;
-      prediction2: string;
-      prediction3: string;
-      text: string;
-    }[];
+    const response = (await res.json()) as SentimentResponse[];
     return response;
   };
-  const [model, setModel] = useState(models[0]);
-
-  const { data, isLoading, refetch } = useQuery(
+  const [selectedModel, setModel] = useState(models[0]);
+  const [_, setCurrentQuery] = useState("");
+  const { data, refetch, isLoading, isFetching } = useQuery(
     ["data"],
     () => fetchTweetsFromTwitter(),
     {
       enabled: false,
+      onSuccess() {
+        setCurrentQuery(query.toString());
+      },
     }
   );
-  // const [data, setData] = useState<
-  //   {
-  //     id: string;
-  //     prediction1: string;
-  //     prediction2: string;
-  //     prediction3: string;
-  //     text: string;
-  //   }[]
-  // >([
-  // {
-  //   id: "1626492462406443008",
-  //   prediction1: "Negative",
-  //   prediction2: "Negative",
-  //   prediction3: "Positive",
-  //   text: "Nepal being everything messy and disturbing. But\n؟?\n⁦سےفے⁦\n\n🔹X9🔹\n🔹X9🔹\n🔹X9🔹",
-  // },
-  // {
-  //   id: "1626492407121321984",
-  //   prediction1: "Negative",
-  //   prediction2: "Negative",
-  //   prediction3: "Positive",
-  //   text: "The secret talks between our neighboring countries to the north and south have been leaked.  China will attack Taiwan and join China.  India should support China.  And India will merge Nepal with India and China will support it.  Therefore, SPP should be implemented in Nepal now.",
-  // },
-  // {
-  //   id: "1626491880669327360",
-  //   prediction1: "Negative",
-  //   prediction2: "Negative",
-  //   prediction3: "Negative",
-  //   text: "Nepal lost another wicket!\n\nRohit Paudel 6 (10) c Jarvis b Watt \nNepal: 55-4 (8.1 overs) \n\nNepal require 220 runs from 41.5 overs.\n\n #CWCL2 #NEPvSCO #weCAN",
-  // },
-  // {
-  //   id: "1626491193768148992",
-  //   prediction1: "Positive",
-  //   prediction2: "Positive",
-  //   prediction3: "Positive",
-  //   text: "Match 3: After 8.0 Ov, Nepal 55/3. Rohit Paudel 6 (9b), Kushal Malla 8 (15b) #NEPvSCO",
-  // },
-  // {
-  //   id: "1626490721917358080",
-  //   prediction1: "Positive",
-  //   prediction2: "Positive",
-  //   prediction3: "Negative",
-  //   text: "🇳🇵Nepal also has been a popular destination for regional FES-events as well as activities of Global Union Federations. Over the years, the Kathmandu Office has acquired a reputation for their hospitality – proudly continuing this Nepalese trait.😊(7/9)",
-  // },
-  // {
-  //   id: "1626490718238969856",
-  //   prediction1: "Positive",
-  //   prediction2: "Positive",
-  //   prediction3: "Negative",
-  //   text: "Another project that is very dear to FES Nepal is the #FESNepalSummerSchool. Every year, they invite around 25 talented and promising young people from different backgrounds for a week-long intensive workshop program to engage on practical issues of democracy. (5/9)",
-  // },
-  // {
-  //   id: "1626490716439584769",
-  //   prediction1: "Positive",
-  //   prediction2: "Positive",
-  //   prediction3: "Positive",
-  //   text: "FES Nepal works closely with different trade union partners. Their focus has been on supporting them in their strategic reflections and building union power to support social justice in Nepal. With #civil society partners, they mostly work with a focus on #genderjustice. (4/9)",
-  // },
-  // {
-  //   id: "1626490713855889410",
-  //   prediction1: "Positive",
-  //   prediction2: "Positive",
-  //   prediction3: "Negative",
-  //   text: "Nepal has a challenging topography and is a very diverse country, so discussion programmes on issues of democratic consolidation outside of the #Kathmandu valley have always been an important part of the office’s work. (3/9)",
-  // },
-  // {
-  //   id: "1626490711632904192",
-  //   prediction1: "Positive",
-  //   prediction2: "Positive",
-  //   prediction3: "Positive",
-  //   text: "𝗗𝘆𝗻𝗮𝗺𝗶𝗰. 𝗙𝗮𝗺𝗶𝗹𝘆. 𝗟𝗮𝘂𝗴𝗵𝘁𝗲𝗿.\n\nFES has been a trusted partner for democracy and social justice in #Nepal since 1995 and is well known for their civic education programme. (2/9)",
-  // },
-  // {
-  //   id: "1626490347890040834",
-  //   prediction1: "Positive",
-  //   prediction2: "Positive",
-  //   prediction3: "Positive",
-  //   text: "I just bought a new old Jag, yeah, it's so fast\n\nKodak White by Népal",
-  // },
-  // ]);
 
-  const options = {
-    // responsive: true,
-    plugins: {
-      legend: {
-        position: "top" as const,
-      },
-      title: {
-        display: true,
-        text: `${model?.name as string} Sentiment Chart `,
-      },
-    },
-  };
-  const labels = [`Tweets containing ${query}`];
+  // const labels = [`Tweets containing ${query}`];
 
-  const positiveTweetsForModel = useMemo(() => {
-    switch (model?.name) {
-      case "prediction1":
-        return data?.filter((tweet) => tweet.prediction1 === "Positive").length;
-      case "prediction2":
-        return data?.filter((tweet) => tweet.prediction2 === "Positive").length;
-      case "prediction3":
-        return data?.filter((tweet) => tweet.prediction3 === "Positive").length;
-      default:
-        break;
-    }
-
-    return;
-  }, [data, model?.name]);
   const negativeTweetsForModel = useMemo(() => {
-    switch (model?.name) {
-      case "prediction1":
-        return data?.filter((tweet) => tweet.prediction1 === "Negative").length;
-      case "prediction2":
-        return data?.filter((tweet) => tweet.prediction2 === "Negative").length;
-      case "prediction3":
-        return data?.filter((tweet) => tweet.prediction3 === "Negative").length;
-      default:
-        break;
+    if (selectedModel?.name) {
+      return data?.filter(
+        (tweet) =>
+          tweet.models[selectedModel.model_id]?.prediction === "Negative"
+      ).length;
     }
-  }, [data, model?.name]);
+    return 0;
+  }, [data, selectedModel]);
+  const positiveTweetsForModel = useMemo(() => {
+    if (selectedModel?.name) {
+      return data?.filter(
+        (tweet) =>
+          tweet.models[selectedModel.model_id]?.prediction === "Positive"
+      ).length;
+    }
+    return 0;
+  }, [data, selectedModel]);
 
-  const chartdata = {
-    labels,
-    datasets: [
-      {
-        label: `Positive Tweets`,
-        data: labels.map(() => positiveTweetsForModel),
-        backgroundColor: "rgba(53, 162, 235, 0.5)",
-      },
-      {
-        label: `Negative Tweets`,
-        data: labels.map(() => negativeTweetsForModel),
-        backgroundColor: "rgba(255, 99, 132, 0.5)",
-      },
-    ],
-  };
-  const label = `Tweets containing ${query}`;
-  const pieData = {
-    labels: ["Positive", "Negative"],
-    datasets: [
-      {
-        data: [positiveTweetsForModel, negativeTweetsForModel],
-        label: label,
-        backgroundColor: ["rgba(54, 162, 235, 0.2)", "rgba(255, 99, 132, 0.2)"],
-        borderColor: ["rgba(54, 162, 235, 1)", "rgba(255, 99, 132, 1)"],
-        borderWidth: 1,
-      },
-    ],
-  };
+  const neutralTweetsForModel = useMemo(() => {
+    if (selectedModel?.name) {
+      return data?.filter(
+        (tweet) =>
+          tweet.models[selectedModel.model_id]?.prediction === "Neutral"
+      ).length;
+    }
+    return 0;
+  }, [selectedModel, data]);
+  const barData = [
+    {
+      positive: positiveTweetsForModel!,
+      negative: negativeTweetsForModel!,
+      neutral: neutralTweetsForModel!,
+      name: selectedModel?.name,
+    },
+  ];
+  const pieChartData = [
+    {
+      name: "Postive",
+      value: positiveTweetsForModel,
+    },
+    {
+      name: "Negative",
+      value: negativeTweetsForModel,
+    },
+    {
+      name: "Neutral",
+      value: neutralTweetsForModel,
+    },
+  ];
+
+  // const label = `Tweets containing ${query}`;
 
   return (
     <main className="flex h-screen w-screen flex-row justify-center bg-gray-300">
@@ -234,17 +147,19 @@ const Page = () => {
             onChange={(e) => setQuery(e.target.value)}
           />
           <button
+            disabled={isFetching}
             className="mx-2 rounded-md bg-indigo-400 px-4 py-2 font-semibold text-white hover:bg-indigo-600"
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             onClick={async () => await refetch()}
           >
-            Search
+            {isFetching && "Loading"}
+            {!isFetching && "Search"}
           </button>
 
-          <Listbox value={model} onChange={setModel}>
+          <Listbox value={selectedModel} onChange={setModel}>
             <div className="relative mt-1">
               <Listbox.Button className="relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
-                <span className="block truncate">{model?.name}</span>
+                <span className="block truncate">{selectedModel?.name}</span>
                 <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                   <ChevronUpDownIcon
                     className="h-5 w-5 text-gray-400"
@@ -261,7 +176,7 @@ const Page = () => {
                 <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                   {models.map((model, modelIdx) => (
                     <Listbox.Option
-                      key={modelIdx}
+                      key={model.model_id}
                       className={({ active }) =>
                         `relative cursor-default select-none py-2 pl-10 pr-4 ${
                           active
@@ -297,78 +212,89 @@ const Page = () => {
             </div>
           </Listbox>
         </div>
-        {/* <Listbox value={model} onChange={setModel}>
-            <Listbox.Button>{model?.name}</Listbox.Button>
-            <Listbox.Options>
-              {models.map((model) => (
-                <Listbox.Option
-                  key={model.id}
-                  value={model}
-                  disabled={model.unavailable}
-                >
-                  {model.name}
-                </Listbox.Option>
-              ))}
-            </Listbox.Options>
-          </Listbox> */}
 
         {/* List of tweets */}
         <div className="overflow-y-auto px-4">
-          {data?.map((tweet) => (
+          {isLoading ? (
+            <div className="items-centers flex justify-center">
+              <p>Loading data wait patiently</p>
+            </div>
+          ) : (
             <>
-              <div
-                className="baseline my-2 flex w-full rounded-md bg-white p-2"
-                key={tweet.id}
-              >
-                <div className="ml-2 mr-4 flex items-center align-baseline">
-                  <p
-                    className={clsx(
-                      tweet.prediction1 === "Positive" && "text-green-500",
-                      tweet.prediction1 === "Negative" && "text-red-500",
-                      "font-bold"
-                    )}
-                  >
-                    {model?.name === "prediction1" && tweet.prediction1[0]}
-                  </p>
-                  <p
-                    className={clsx(
-                      tweet.prediction2 === "Positive" && "text-green-500",
-                      tweet.prediction2 === "Negative" && "text-red-500",
-                      "font-bold"
-                    )}
-                  >
-                    {model?.name === "prediction2" && tweet.prediction2[0]}
-                  </p>
-                  <p
-                    className={clsx(
-                      tweet.prediction3 === "Positive" && "text-green-500",
-                      tweet.prediction3 === "Negative" && "text-red-500",
-                      "font-bold"
-                    )}
-                  >
-                    {model?.name === "prediction3" && tweet.prediction3[0]}
-                  </p>
-                </div>
-                <div className="">{tweet.text}</div>
-              </div>
+              {selectedModel && (
+                <>
+                  {data?.map((tweet) => (
+                    <>
+                      <div
+                        className="baseline my-2 flex w-full rounded-md bg-white p-2"
+                        key={tweet.id}
+                      >
+                        <div className="ml-2 mr-4 flex items-center align-baseline">
+                          <p
+                            className={clsx(
+                              tweet.models[selectedModel.model_id]
+                                ?.prediction === "Positive" && "text-green-500",
+                              tweet.models[selectedModel.model_id]
+                                ?.prediction === "Negative" && "text-red-500",
+                              "font-bold",
+                              tweet.models[selectedModel.model_id]
+                                ?.prediction === "Neutral" && "text-amber-900"
+                            )}
+                          >
+                            {
+                              tweet.models[selectedModel.model_id]
+                                ?.prediction[0]
+                            }
+                          </p>
+                        </div>
+                        <div className="">{tweet.tweet}</div>
+                      </div>
+                    </>
+                  ))}
+                </>
+              )}
             </>
-          ))}
+          )}
         </div>
       </div>
-      <div className="flex flex-1 flex-col items-center justify-center overflow-y-scroll">
-        {data && <Bar data={chartdata} options={options} />}
+      <div className="mt-4 flex flex-1 flex-col items-center justify-center overflow-y-scroll pt-8">
         {data && (
-          <Pie
-            width={500}
-            height={500}
-            options={{
-              maintainAspectRatio: false,
-              responsive: false,
-            }}
-            data={pieData}
-          />
+          <>
+            <ResponsiveContainer width="100%" height="50%">
+              <BarChart data={barData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="positive" fill="#8884d8" />
+                <Bar dataKey="negative" fill="#82ca9d" />
+                <Bar dataKey="neutral" fill="#442244" />
+              </BarChart>
+            </ResponsiveContainer>
+            <ResponsiveContainer width="100%" height="50%">
+              <PieChart>
+                <Pie
+                  dataKey="value"
+                  data={pieChartData}
+                  cx="60%"
+                  cy="60%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                >
+                  {data.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                  ))}
+                </Pie>
+                <Legend />
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </>
         )}
-        {!data && <p>Nothing to see here</p>}
+
+        {!data && !isLoading && <p>Nothing to see here</p>}
+        {!data && isLoading && <p>Loading data... Please wait patiently.</p>}
       </div>
     </main>
   );
