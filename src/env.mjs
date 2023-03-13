@@ -7,8 +7,8 @@ import { z } from "zod";
 const server = z.object({
   DATABASE_URL: z.string().url(),
   NODE_ENV: z.enum(["development", "test", "production"]),
-  TWITTER_AUTHORIZATION: z.string().url(),
-  COOKIE: z.string().url(),
+  TWITTER_AUTHORIZATION: z.string(),
+  COOKIE: z.string(),
 });
 
 /**

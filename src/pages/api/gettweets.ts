@@ -23,7 +23,7 @@ export default async function handler(
     try {
       let totalTweets: SentimentResponse[] = [];
       let response = await fetch(
-        "https://api.twitter.com/2/tweets/search/recent?max_results=10&query=" +
+        "https://api.twitter.com/2/tweets/search/recent?max_results=50&query=" +
           search +
           " -is:retweet -has:links -has:mentions lang:en",
         {

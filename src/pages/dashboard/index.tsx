@@ -44,10 +44,15 @@ const models = [
     name: "Random Forest Classifier" as const,
     unavailable: false,
   },
-  { model_id: 3, name: "BERT Finetuned" as const, unavailable: false },
   {
-    model_id: 4,
-    name: "Twitter XLM Sentiment Finetuned" as const,
+    model_id:3,
+    name:"Linear Regression",
+    unavailable:false
+  },
+  { model_id: 4, name: "BERT Finetuned" as const, unavailable: false },
+  {
+    model_id: 5,
+    name: "Twitter Roberta Finetuned" as const,
     unavailable: false,
   },
 ];
