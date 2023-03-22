@@ -46,7 +46,7 @@ const models = [
   },
   {
     model_id:3,
-    name:"Linear Regression",
+    name:"Logistic Regression",
     unavailable:false
   },
   { model_id: 4, name: "BERT Finetuned" as const, unavailable: false },
